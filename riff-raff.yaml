@@ -1,0 +1,19 @@
+stacks: [membership]
+regions: [eu-west-1]
+
+deployments:
+  salesforce-message-handler:
+    type: aws-lambda
+    parameters:
+      bucket: membership-dist
+      functionNames: [salesforce-message-handler-]
+      fileName: salesforce-message-handler.jar
+      prefixStack: false
+    dependencies: [salesforce-message-handler-cfn]
+  salesforce-message-handler-cfn:
+    type: cloud-formation
+    app: salesforce-message-handler
+    parameters:
+      prependStackToCloudFormationStackName: false
+      cloudFormationStackName: salesforce-message-handler
+      templatePath: cfn.yaml
