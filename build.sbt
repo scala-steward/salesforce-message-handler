@@ -17,7 +17,7 @@ scalacOptions ++= Seq(
 
 libraryDependencies ++= Seq(
   "com.amazonaws" % "aws-lambda-java-core" % "1.1.0",
-  "org.slf4j" % "slf4j-simple" % "1.8.0-alpha2"
+  "org.slf4j" % "slf4j-simple" % "1.7.25"
 )
 
 enablePlugins(RiffRaffArtifact)
