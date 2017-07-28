@@ -32,10 +32,10 @@ object Lambda {
   /*
    * This is your lambda entry point
    */
-  def handler(lambdaInput: String, context: Context): Unit = {
+  def handler(lambdaInput: Envelope, context: Context): Unit = {
     val env = Env()
     logger.info(s"Starting $env")
-    //logger.info(lambdaInput)
+    logger.info(lambdaInput.toString)
     logger.info(process("world", env))
   }
 
