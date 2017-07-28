@@ -6,7 +6,7 @@ deployments:
     type: aws-lambda
     parameters:
       bucket: membership-dist
-      functionNames: [salesforce-message-handler-]
+      functionNames: [salesforce-message-handler-mailingAddress-]
       fileName: salesforce-message-handler.jar
       prefixStack: false
     dependencies: [salesforce-message-handler-cfn]
