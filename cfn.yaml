@@ -49,10 +49,10 @@ Resources:
               Action:
                 - lambda:InvokeFunction
               Resource: "*"
-  Lambda:
+  MailingAddressLambda:
     Type: AWS::Lambda::Function
     Properties:
-      FunctionName: !Sub ${App}-${Stage}
+      FunctionName: !Sub ${App}-mailingAddress-${Stage}
       Code:
         S3Bucket:
           Ref: DeployBucket
@@ -69,3 +69,56 @@ Resources:
       Runtime: java8
       Timeout: 300
 
+  MessageHandlerApiPermission:
+          Type: AWS::Lambda::Permission
+          Properties:
+              Action: lambda:invokeFunction
+              FunctionName: !Sub ${App}-${Stage}
+              Principal: apigateway.amazonaws.com
+          DependsOn: MailingAddressLambda
+
+  MessageHandlerApi:
+      Type: "AWS::ApiGateway::RestApi"
+      Properties:
+          Description: Api to handle salesforce outbound messages
+          Name: !Sub salesforce-message-handler-${Stage}
+
+  MessageHandlerApiResource:
+      Type: AWS::ApiGateway::Resource
+      Properties:
+          RestApiId: !Ref MessageHandlerApi
+          ParentId: !GetAtt [MessageHandlerApi, RootResourceId]
+          PathPart: mailingAddress
+      DependsOn: MessageHandlerApi
+
+  MailingAddressMethod:
+      Type: AWS::ApiGateway::Method
+      Properties:
+          AuthorizationType: NONE
+          RestApiId: !Ref MessageHandlerApi
+          ResourceId: !Ref MessageHandlerApiResource
+          HttpMethod: POST
+          Integration:
+            Type: AWS_PROXY
+            IntegrationHttpMethod: POST
+            Uri: !Sub arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${MailingAddressLambda.Arn}/invocations
+      DependsOn:
+      - MessageHandlerApi
+      - MailingAddressLambda
+      - MessageHandlerApiResource
+
+  MessageHandlerApiStage:
+    Type: AWS::ApiGateway::Stage
+    Properties:
+        Description: Stage for salesforce message handler API
+        RestApiId: !Ref MessageHandlerApi
+        DeploymentId: !Ref MessageHandlerAPIDeployment
+        StageName: !Sub ${Stage}
+    DependsOn: MailingAddressMethod
+
+  MessageHandlerAPIDeployment:
+    Type: AWS::ApiGateway::Deployment
+    Properties:
+        Description: Deploys the message handler API into an environment/stage
+        RestApiId: !Ref MessageHandlerApi
+    DependsOn: MailingAddressMethod
