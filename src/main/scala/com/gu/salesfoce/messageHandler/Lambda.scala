@@ -1,6 +1,6 @@
 package com.gu.salesfoce.messageHandler
 
-import com.amazonaws.services.lambda.runtime.Context
+import com.amazonaws.services.lambda.runtime.{ Context, RequestHandler }
 import org.slf4j.{ Logger, LoggerFactory }
 
 /**
@@ -14,6 +14,8 @@ import org.slf4j.{ Logger, LoggerFactory }
 //  def setName(theName: String): Unit = name = theName
 //}
 
+case class SoapWrapper(body: String)
+
 case class Env(app: String, stack: String, stage: String) {
   override def toString: String = s"App: $app, Stack: $stack, Stage: $stage\n"
 }
@@ -25,28 +27,35 @@ object Env {
     Option(System.getenv("Stage")).getOrElse("DEV"))
 }
 
-object Lambda {
+object Lambda extends RequestHandler[SoapWrapper, SoapWrapper] {
 
   val logger: Logger = LoggerFactory.getLogger(this.getClass)
 
-  /*
-   * This is your lambda entry point
-   */
-  def handler(lambdaInput: String, context: Context): Unit = {
-    val env = Env()
-    logger.info(s"Starting $env")
-    logger.info(lambdaInput.toString)
-    logger.info(process("world", env))
+  override def handleRequest(input: SoapWrapper, context: Context): SoapWrapper = {
+    logger.info(s"Starting")
+    logger.info(input.toString)
+    return SoapWrapper("hello")
   }
+
+  //  /*
+  //   * This is your lambda entry point
+  //   */
+  //  def handler(lambdaInput: SoapWrapper, context: Context): Unit = {
+  //    val env = Env()
+  //    logger.info(s"Starting $env")
+  //    logger.info(lambdaInput.toString)
+  //    logger.info(process("world", env))
+  //  }
 
   /*
    * I recommend to put your logic outside of the handler
    */
   def process(name: String, env: Env): String = s"Hello $name! (from ${env.app} in ${env.stack})\n"
+
 }
 
-object TestIt {
-  def main(args: Array[String]): Unit = {
-    println(Lambda.process(args.headOption.getOrElse("Alex"), Env()))
-  }
-}
+//object TestIt {
+//  def main(args: Array[String]): Unit = {
+//    println(Lambda.process(args.headOption.getOrElse("Alex"), Env()))
+//  }
+//}
