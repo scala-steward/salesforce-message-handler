@@ -14,7 +14,9 @@ import org.slf4j.{ Logger, LoggerFactory }
 //  def setName(theName: String): Unit = name = theName
 //}
 
-case class SoapWrapper(body: String)
+class SoapWrapper(val body: String) {
+  override def toString = body
+}
 
 case class Env(app: String, stack: String, stage: String) {
   override def toString: String = s"App: $app, Stack: $stack, Stage: $stage\n"
@@ -34,7 +36,7 @@ object Lambda extends RequestHandler[SoapWrapper, SoapWrapper] {
   override def handleRequest(input: SoapWrapper, context: Context): SoapWrapper = {
     logger.info(s"Starting")
     logger.info(input.toString)
-    return SoapWrapper("hello")
+    return new SoapWrapper("hello")
   }
 
   //  /*
