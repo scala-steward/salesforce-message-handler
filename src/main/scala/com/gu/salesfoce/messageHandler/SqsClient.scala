@@ -28,15 +28,17 @@ object SqsClient extends QueueClient with Logging {
 
   override def send(queueName: String, message: String)(implicit ec: ExecutionContext): Future[Try[SendMessageResult]] = {
     val queueUrl = sqsClient.getQueueUrl(queueName).getQueueUrl
-    val payload = Json.toJson(message).toString()
 
     def sendToQueue(msg: String): SendMessageResult = {
       logger.info(s"sending to queue $queueUrl")
-      sqsClient.sendMessage(new SendMessageRequest(queueUrl, msg))
+      val sendMessageRequest = new SendMessageRequest(queueUrl, msg)
+      //TODO if we parsed the xml message we could use account id or something like that as messageGroupId
+      sendMessageRequest.setMessageGroupId("messageGroup1")
+      sqsClient.sendMessage(sendMessageRequest)
     }
 
     Future {
-      Try(sendToQueue(payload))
+      Try(sendToQueue(message))
     }
   }
 
