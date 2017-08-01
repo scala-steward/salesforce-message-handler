@@ -29,18 +29,15 @@ object Env {
     Option(System.getenv("Stage")).getOrElse("DEV"))
 }
 
-object Lambda extends RequestHandler[SoapWrapper, SoapWrapper] {
+object Lambda extends RequestHandler[SoapWrapper, String] {
 
   val logger: Logger = LoggerFactory.getLogger(this.getClass)
 
 
-  override def handleRequest(input: SoapWrapper, context: Context): SoapWrapper = {
+  override def handleRequest(input: SoapWrapper, context: Context): String = {
     logger.info(s"Starting")
     logger.info(input.toString)
-    val response = new SoapWrapper()
-    response.setBody("hi")
-    logger.info(s"returning ${response.toString}")
-    return response
+    return "hello there"
   }
 
   //  /*
