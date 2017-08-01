@@ -2,12 +2,17 @@ package com.gu.salesfoce.messageHandler
 
 import com.amazonaws.services.lambda.runtime.Context
 import java.io.{ InputStream, OutputStream }
+import java.util.concurrent.Executors
 
+import com.amazonaws.auth.profile.ProfileCredentialsProvider
+import com.amazonaws.auth.{ AWSCredentialsProviderChain, InstanceProfileCredentialsProvider }
+import com.amazonaws.regions.Regions.EU_WEST_1
+import com.amazonaws.services.sqs.AmazonSQSClient
 import com.gu.salesfoce.messageHandler.ResponseModels.{ ApiResponse, Headers }
-import play.api.libs.json.{ JsValue, Json }
+import play.api.libs.json.Json
 
-import scala.xml.Elem
-import scala.xml.XML._
+import scala.concurrent.ExecutionContext
+import scala.util.{ Failure, Success }
 
 case class Env(app: String, stack: String, stage: String) {
   override def toString: String = s"App: $app, Stack: $stack, Stage: $stage\n"
@@ -21,6 +26,9 @@ object Env {
 }
 
 object Lambda extends Logging {
+  val ThreadCount = 10
+  implicit val executionContext = ExecutionContext.fromExecutor(Executors.newFixedThreadPool(ThreadCount))
+
   val okXml =
     """
       |<?xml version="1.0" encoding="UTF-8"?>
@@ -39,15 +47,18 @@ object Lambda extends Logging {
   val okResponse = ApiResponse("200", Headers(), okXml)
 
   def handleRequest(inputStream: InputStream, outputStream: OutputStream, context: Context): Unit = {
-    logger.info(s"Auto-cancel Lambda is starting up...")
+    logger.info(s"Salesforce message handler lambda is starting up...")
     val inputEvent = Json.parse(inputStream)
-    val xmlBody = extractXmlBodyFromJson(inputEvent)
-    logger.info(s"got input ${xmlBody}")
-    APIGatewayResponse.outputForAPIGateway(outputStream, okResponse)
+    val body = (inputEvent \ "body").as[String]
+    SqsClient.send(body).map {
+      case Success(r) =>
+        logger.info("successfully sent to queue")
+        APIGatewayResponse.outputForAPIGateway(outputStream, okResponse)
+      case Failure(ex) =>
+        logger.error("could not send message to queue", ex)
+        APIGatewayResponse.outputForAPIGateway(outputStream, ApiResponse("500", Headers(), "server error")) //see if we need anything better than this!
+
+    }
   }
 
-  def extractXmlBodyFromJson(inputEvent: JsValue): Elem = {
-    val body = (inputEvent \ "body")
-    loadString(body.as[String])
-  }
 }
