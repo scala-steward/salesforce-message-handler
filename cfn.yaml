@@ -73,7 +73,7 @@ Resources:
           Type: AWS::Lambda::Permission
           Properties:
               Action: lambda:invokeFunction
-              FunctionName: !Sub ${App}-${Stage}
+              FunctionName: !Sub ${App}-mailingAddress-${Stage}
               Principal: apigateway.amazonaws.com
           DependsOn: MailingAddressLambda
 
