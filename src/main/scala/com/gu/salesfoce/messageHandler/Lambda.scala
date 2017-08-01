@@ -1,18 +1,19 @@
 package com.gu.salesfoce.messageHandler
 
 import com.amazonaws.services.lambda.runtime.Context
-import java.io.{ InputStream, OutputStream }
+import java.io.{InputStream, OutputStream}
+import scala.concurrent.duration.Duration
 import java.util.concurrent.Executors
 
 import com.amazonaws.auth.profile.ProfileCredentialsProvider
-import com.amazonaws.auth.{ AWSCredentialsProviderChain, InstanceProfileCredentialsProvider }
+import com.amazonaws.auth.{AWSCredentialsProviderChain, InstanceProfileCredentialsProvider}
 import com.amazonaws.regions.Regions.EU_WEST_1
 import com.amazonaws.services.sqs.AmazonSQSClient
-import com.gu.salesfoce.messageHandler.ResponseModels.{ ApiResponse, Headers }
+import com.gu.salesfoce.messageHandler.ResponseModels.{ApiResponse, Headers}
 import play.api.libs.json.Json
 
-import scala.concurrent.ExecutionContext
-import scala.util.{ Failure, Success }
+import scala.concurrent.{Await, ExecutionContext}
+import scala.util.{Failure, Success}
 
 case class Env(app: String, stack: String, stage: String) {
   override def toString: String = s"App: $app, Stack: $stack, Stage: $stage\n"
@@ -52,7 +53,7 @@ object Lambda extends Logging {
     val inputEvent = Json.parse(inputStream)
     val body = (inputEvent \ "body").as[String]
 
-    SqsClient.send(s"salesforce-outbound-messages-zuora-${stage}.fifo", body).map {
+    val response = SqsClient.send(s"salesforce-outbound-messages-zuora-${stage}.fifo", body).map {
       case Success(r) =>
         logger.info("successfully sent to queue")
         APIGatewayResponse.outputForAPIGateway(outputStream, okResponse)
@@ -61,6 +62,8 @@ object Lambda extends Logging {
         APIGatewayResponse.outputForAPIGateway(outputStream, ApiResponse("500", Headers(), "server error")) //see if we need anything better than this!
 
     }
+    Await.ready(response, Duration.Inf)
+
   }
 
 }
