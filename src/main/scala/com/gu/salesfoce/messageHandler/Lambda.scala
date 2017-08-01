@@ -33,11 +33,13 @@ object Lambda extends RequestHandler[SoapWrapper, SoapWrapper] {
 
   val logger: Logger = LoggerFactory.getLogger(this.getClass)
 
+
   override def handleRequest(input: SoapWrapper, context: Context): SoapWrapper = {
     logger.info(s"Starting")
     logger.info(input.toString)
     val response = new SoapWrapper()
     response.setBody("hi")
+    logger.info(s"returning ${response.toString}")
     return response
   }
 
