@@ -27,7 +27,7 @@ object SqsClient extends QueueClient with Logging {
     .build()
 
   override def send(queueName: String, message: String)(implicit ec: ExecutionContext): Future[Try[SendMessageResult]] = {
-    val queueUrl = sqsClient.createQueue(new CreateQueueRequest(queueName)).getQueueUrl
+    val queueUrl = sqsClient.getQueueUrl(queueName).getQueueUrl
     val payload = Json.toJson(message).toString()
 
     def sendToQueue(msg: String): SendMessageResult = {

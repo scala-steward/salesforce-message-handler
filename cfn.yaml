@@ -53,8 +53,8 @@ Resources:
           PolicyDocument:
             Statement:
               Effect: Allow
-              Action: sqs:sendMessage
-              Resource: !Sub arn:aws:sqs:${AWS::Region}:${AWS::AccountId}:salesforce-outbound-messages-zuora-${Stage}.fifo.fifo
+              Action: sqs:*
+              Resource: !Sub arn:aws:sqs:${AWS::Region}:${AWS::AccountId}:salesforce-outbound-messages-zuora-${Stage}.fifo
   MailingAddressLambda:
     Type: AWS::Lambda::Function
     Properties:
