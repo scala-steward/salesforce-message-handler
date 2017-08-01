@@ -63,7 +63,7 @@ Resources:
           Stack: !Ref Stack
           App: !Ref App
       Description: handle outbound messages from salesforce to update zuora and identity
-      Handler: com.gu.salesfoce.messageHandler.Lambda::handler
+      Handler: com.gu.salesfoce.messageHandler.Lambda::handleRequest
       MemorySize: 128
       Role: !GetAtt ExecutionRole.Arn
       Runtime: java8
