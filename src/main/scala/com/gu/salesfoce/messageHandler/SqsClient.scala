@@ -25,7 +25,7 @@ object SqsClient extends QueueClient with Logging {
     .withCredentials(CredentialsProvider)
     .withRegion(EU_WEST_1)
     .build()
-  
+
   override def send(queueName: String, message: String)(implicit ec: ExecutionContext): Future[Try[SendMessageResult]] = {
     val queueUrl = sqsClient.createQueue(new CreateQueueRequest(queueName)).getQueueUrl
     val payload = Json.toJson(message).toString()
