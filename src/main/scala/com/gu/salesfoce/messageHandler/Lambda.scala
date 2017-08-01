@@ -8,14 +8,10 @@ import org.slf4j.{ Logger, LoggerFactory }
  * You can test your lambda by sending it the following payload:
  * {"name": "Bob"}
  */
-//class LambdaInput() {
-//  var name: String = _
-//  def getName(): String = name
-//  def setName(theName: String): Unit = name = theName
-//}
-
-class SoapWrapper(val body: String) {
-  override def toString = body
+class SoapWrapper() {
+  var body: String = _
+  def geBody(): String = body
+  def setBody(theBody: String): Unit = body = theBody
 }
 
 case class Env(app: String, stack: String, stage: String) {
@@ -36,7 +32,9 @@ object Lambda extends RequestHandler[SoapWrapper, SoapWrapper] {
   override def handleRequest(input: SoapWrapper, context: Context): SoapWrapper = {
     logger.info(s"Starting")
     logger.info(input.toString)
-    return new SoapWrapper("hello")
+    val response = new SoapWrapper()
+    response.setBody("hi")
+    return response
   }
 
   //  /*
