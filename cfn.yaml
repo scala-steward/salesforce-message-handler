@@ -64,7 +64,7 @@ Resources:
           App: !Ref App
       Description: handle outbound messages from salesforce to update zuora and identity
       Handler: com.gu.salesfoce.messageHandler.Lambda::handleRequest
-      MemorySize: 128
+      MemorySize: 512
       Role: !GetAtt ExecutionRole.Arn
       Runtime: java8
       Timeout: 300
