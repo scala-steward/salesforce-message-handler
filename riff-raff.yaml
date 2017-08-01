@@ -9,11 +9,3 @@ deployments:
       functionNames: [salesforce-message-handler-mailingAddress-]
       fileName: salesforce-message-handler.jar
       prefixStack: false
-    dependencies: [salesforce-message-handler-cfn]
-  salesforce-message-handler-cfn:
-    type: cloud-formation
-    app: salesforce-message-handler
-    parameters:
-      prependStackToCloudFormationStackName: false
-      cloudFormationStackName: salesforce-message-handler
-      templatePath: cfn.yaml

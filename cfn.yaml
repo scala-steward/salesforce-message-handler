@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: 2010-09-09
-Description: handle outbound messages from salesforce to update zuora and indentity
+Description: handle outbound messages from salesforce to update zuora and identity
 Parameters:
   Stack:
     Description: Stack name
