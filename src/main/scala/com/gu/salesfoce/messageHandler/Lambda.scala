@@ -1,17 +1,21 @@
 package com.gu.salesfoce.messageHandler
 
-import com.amazonaws.services.lambda.runtime.{ Context, RequestHandler }
-import org.slf4j.{ Logger, LoggerFactory }
+import com.amazonaws.services.lambda.runtime.{Context, RequestHandler}
+import org.slf4j.{Logger, LoggerFactory}
 
 /**
- * This is compatible with aws' lambda JSON to POJO conversion.
- * You can test your lambda by sending it the following payload:
- * {"name": "Bob"}
- */
+  * This is compatible with aws' lambda JSON to POJO conversion.
+  * You can test your lambda by sending it the following payload:
+  * {"name": "Bob"}
+  */
 class SoapWrapper() {
   var body: String = _
+
   def geBody(): String = body
+
   def setBody(theBody: String): Unit = body = theBody
+
+  override def toString: String = body
 }
 
 case class Env(app: String, stack: String, stage: String) {
