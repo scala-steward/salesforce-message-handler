@@ -1,22 +1,13 @@
 package com.gu.salesfoce.messageHandler
 
-import com.amazonaws.services.lambda.runtime.{Context, RequestHandler}
-import org.slf4j.{Logger, LoggerFactory}
+import com.amazonaws.services.lambda.runtime.Context
+import java.io.{ InputStream, OutputStream }
 
-/**
-  * This is compatible with aws' lambda JSON to POJO conversion.
-  * You can test your lambda by sending it the following payload:
-  * {"name": "Bob"}
-  */
-class SoapWrapper() {
-  var body: String = _
+import com.gu.salesfoce.messageHandler.ResponseModels.{ ApiResponse, Headers }
+import play.api.libs.json.{ JsValue, Json }
 
-  def geBody(): String = body
-
-  def setBody(theBody: String): Unit = body = theBody
-
-  override def toString: String = body
-}
+import scala.xml.Elem
+import scala.xml.XML._
 
 case class Env(app: String, stack: String, stage: String) {
   override def toString: String = s"App: $app, Stack: $stack, Stage: $stage\n"
@@ -29,36 +20,34 @@ object Env {
     Option(System.getenv("Stage")).getOrElse("DEV"))
 }
 
-object Lambda extends RequestHandler[SoapWrapper, String] {
+object Lambda extends Logging {
+  val okXml =
+    """
+      |<?xml version="1.0" encoding="UTF-8"?>
+      |<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+      | <soapenv:Body>
+      |  <element name="notificationsResponse">
+      |    <complexType>
+      |        <sequence>
+      |            <element name="Ack" type="xsd:boolean" />
+      |        </sequence>
+      |    </complexType>
+      |</element>
+      | </soapenv:Body>
+      |</soapenv:Envelope
+    """.stripMargin
+  val okResponse = ApiResponse("200", Headers(), okXml)
 
-  val logger: Logger = LoggerFactory.getLogger(this.getClass)
-
-
-  override def handleRequest(input: SoapWrapper, context: Context): String = {
-    logger.info(s"Starting")
-    logger.info(input.toString)
-    return "hello there"
+  def handleRequest(inputStream: InputStream, outputStream: OutputStream, context: Context): Unit = {
+    logger.info(s"Auto-cancel Lambda is starting up...")
+    val inputEvent = Json.parse(inputStream)
+    val xmlBody = extractXmlBodyFromJson(inputEvent)
+    logger.info(s"got input ${xmlBody}")
+    APIGatewayResponse.outputForAPIGateway(outputStream, okResponse)
   }
 
-  //  /*
-  //   * This is your lambda entry point
-  //   */
-  //  def handler(lambdaInput: SoapWrapper, context: Context): Unit = {
-  //    val env = Env()
-  //    logger.info(s"Starting $env")
-  //    logger.info(lambdaInput.toString)
-  //    logger.info(process("world", env))
-  //  }
-
-  /*
-   * I recommend to put your logic outside of the handler
-   */
-  def process(name: String, env: Env): String = s"Hello $name! (from ${env.app} in ${env.stack})\n"
-
+  def extractXmlBodyFromJson(inputEvent: JsValue): Elem = {
+    val body = (inputEvent \ "body")
+    loadString(body.as[String])
+  }
 }
-
-//object TestIt {
-//  def main(args: Array[String]): Unit = {
-//    println(Lambda.process(args.headOption.getOrElse("Alex"), Env()))
-//  }
-//}
