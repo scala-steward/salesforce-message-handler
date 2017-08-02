@@ -57,10 +57,10 @@ Resources:
       Properties:
           RestApiId: !Ref MessageHandlerApi
           ParentId: !GetAtt [MessageHandlerApi, RootResourceId]
-          PathPart: mailingAddress
+          PathPart: contact
       DependsOn: MessageHandlerApi
 
-  MailingAddressMethod:
+  ContactMethod:
       Type: "AWS::ApiGateway::Method"
       Properties:
         AuthorizationType: "NONE"
@@ -105,14 +105,14 @@ Resources:
         RestApiId: !Ref MessageHandlerApi
         DeploymentId: !Ref MessageHandlerAPIDeployment
         StageName: !Sub ${Stage}
-    DependsOn: MailingAddressMethod
+    DependsOn: ContactMethod
 
   MessageHandlerAPIDeployment:
     Type: AWS::ApiGateway::Deployment
     Properties:
         Description: Deploys the message handler API into an environment/stage
         RestApiId: !Ref MessageHandlerApi
-    DependsOn: MailingAddressMethod
+    DependsOn: ContactMethod
 
 
 
