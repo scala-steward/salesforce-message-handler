@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: 2010-09-09
-Description: handle outbound messages from salesforce to update zuora and identity
+Description: handle outbound messages from salesforce to update zuora and indentity
 Parameters:
   Stack:
     Description: Stack name
@@ -21,7 +21,7 @@ Parameters:
     Type: String
     Default: membership-dist
 Resources:
-  ExecutionRole:
+  ApiGatewayRole:
     Type: AWS::IAM::Role
     Properties:
       AssumeRolePolicyDocument:
@@ -29,60 +29,23 @@ Resources:
           - Effect: Allow
             Principal:
               Service:
-                - lambda.amazonaws.com
+                - apigateway.amazonaws.com
             Action: sts:AssumeRole
       Path: /
-      Policies:
-        - PolicyName: logs
-          PolicyDocument:
-            Statement:
-              Effect: Allow
-              Action:
-                - logs:CreateLogGroup
-                - logs:CreateLogStream
-                - logs:PutLogEvents
-              Resource: arn:aws:logs:*:*:*
-        - PolicyName: lambda
-          PolicyDocument:
-            Statement:
-              Effect: Allow
-              Action:
-                - lambda:InvokeFunction
-              Resource: "*"
-        - PolicyName: SQSPutInQueue
-          PolicyDocument:
-            Statement:
-              Effect: Allow
-              Action: sqs:*
-              Resource: !Sub arn:aws:sqs:${AWS::Region}:${AWS::AccountId}:salesforce-outbound-messages-zuora-${Stage}.fifo
-  MailingAddressLambda:
-    Type: AWS::Lambda::Function
-    Properties:
-      FunctionName: !Sub ${App}-mailingAddress-${Stage}
-      Code:
-        S3Bucket:
-          Ref: DeployBucket
-        S3Key: !Sub ${Stack}/${Stage}/${App}/${App}.jar
-      Environment:
-        Variables:
-          Stage: !Ref Stage
-          Stack: !Ref Stack
-          App: !Ref App
-      Description: handle outbound messages from salesforce to update zuora and identity
-      Handler: com.gu.salesfoce.messageHandler.Lambda::handleRequest
-      MemorySize: 512
-      Role: !GetAtt ExecutionRole.Arn
-      Runtime: java8
-      Timeout: 300
 
-  MessageHandlerApiPermission:
-          Type: AWS::Lambda::Permission
-          Properties:
-              Action: lambda:invokeFunction
-              FunctionName: !Sub ${App}-mailingAddress-${Stage}
-              Principal: apigateway.amazonaws.com
-          DependsOn: MailingAddressLambda
+  SQSPolicy:
+      Type: AWS::IAM::Policy
+      Properties:
+          PolicyName: sqs-policy
+          PolicyDocument:
+              Statement:
+                  - Effect: Allow
+                    Action:
+                        - sqs:SendMessage
+                    Resource: !Sub "arn:aws:sqs:${AWS::Region}:${AWS::AccountId}:salesforce-outbound-messages-${Stage}.fifo"
 
+          Roles:
+              - !Ref ApiGatewayRole
   MessageHandlerApi:
       Type: "AWS::ApiGateway::RestApi"
       Properties:
@@ -98,20 +61,40 @@ Resources:
       DependsOn: MessageHandlerApi
 
   MailingAddressMethod:
-      Type: AWS::ApiGateway::Method
+      Type: "AWS::ApiGateway::Method"
       Properties:
-          AuthorizationType: NONE
-          RestApiId: !Ref MessageHandlerApi
-          ResourceId: !Ref MessageHandlerApiResource
-          HttpMethod: POST
-          Integration:
-            Type: AWS_PROXY
-            IntegrationHttpMethod: POST
-            Uri: !Sub arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${MailingAddressLambda.Arn}/invocations
+        AuthorizationType: "NONE"
+        HttpMethod: "POST"
+        RestApiId: !Ref MessageHandlerApi
+        ResourceId: !Ref MessageHandlerApiResource
+        MethodResponses:
+        - StatusCode: 200
+        Integration:
+          Credentials: !GetAtt ApiGatewayRole.Arn
+          IntegrationHttpMethod: "POST"
+          IntegrationResponses:
+          - StatusCode: 200
+          Type: "AWS"
+          Uri: !Sub "arn:aws:apigateway:${AWS::Region}:sqs:action/SendMessage"
+          RequestParameters:
+            integration.request.querystring.QueueUrl: !Sub "'https://sqs.${AWS::Region}.amazonaws.com/${AWS::AccountId}/salesforce-outbound-messages-CODE.fifo'"
+            integration.request.querystring.MessageGroupId: "'salesforce_outbound1'"
+            integration.request.querystring.MessageBody:  "method.request.body"
+          IntegrationResponses:
+            - StatusCode: 200
+              ResponseTemplates:
+                text/xml: |
+                  <?xml version="1.0" encoding="UTF-8"?>
+                  <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/">
+                      <soapenv:Body>
+                          <notificationsResponse xmlns="http://soap.sforce.com/2005/09/outbound">
+                              <Ack>true</Ack>
+                          </notificationsResponse>
+                      </soapenv:Body>
+                  </soapenv:Envelope>
       DependsOn:
       - MessageHandlerApi
-      - MailingAddressLambda
-      - MessageHandlerApiResource
+      - ApiGatewayRole
 
   MessageHandlerApiStage:
     Type: AWS::ApiGateway::Stage
@@ -128,3 +111,8 @@ Resources:
         Description: Deploys the message handler API into an environment/stage
         RestApiId: !Ref MessageHandlerApi
     DependsOn: MailingAddressMethod
+
+
+
+
+
