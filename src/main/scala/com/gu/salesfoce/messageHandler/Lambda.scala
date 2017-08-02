@@ -39,7 +39,7 @@ object Lambda extends Logging {
       |			<Ack>true</Ack>
       |		</notificationsResponse>
       |	</soapenv:Body>
-      |<soapenv:Envelope>
+      |</soapenv:Envelope>
     """.stripMargin
   val okResponse = ApiResponse("200", Headers(), okXml)
 
