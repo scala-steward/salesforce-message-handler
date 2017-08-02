@@ -69,11 +69,11 @@ Resources:
         ResourceId: !Ref MessageHandlerApiResource
         MethodResponses:
         - StatusCode: 200
+          ResponseParameters:
+            method.response.header.Content-Type: true
         Integration:
           Credentials: !GetAtt ApiGatewayRole.Arn
           IntegrationHttpMethod: "POST"
-          IntegrationResponses:
-          - StatusCode: 200
           Type: "AWS"
           Uri: !Sub "arn:aws:apigateway:${AWS::Region}:sqs:action/SendMessage"
           RequestParameters:
@@ -81,17 +81,19 @@ Resources:
             integration.request.querystring.MessageGroupId: "'salesforce_outbound1'"
             integration.request.querystring.MessageBody:  "method.request.body"
           IntegrationResponses:
-            - StatusCode: 200
-              ResponseTemplates:
-                text/xml: |
-                  <?xml version="1.0" encoding="UTF-8"?>
-                  <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/">
-                      <soapenv:Body>
-                          <notificationsResponse xmlns="http://soap.sforce.com/2005/09/outbound">
-                              <Ack>true</Ack>
-                          </notificationsResponse>
-                      </soapenv:Body>
-                  </soapenv:Envelope>
+          - StatusCode: 200
+            ResponseParameters:
+              method.response.header.Content-Type: "'text/xml'"
+            ResponseTemplates:
+               text/xml: |
+                 <?xml version="1.0" encoding="UTF-8"?>
+                 <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/">
+                     <soapenv:Body>
+                         <notificationsResponse xmlns="http://soap.sforce.com/2005/09/outbound">
+                             <Ack>true</Ack>
+                         </notificationsResponse>
+                     </soapenv:Body>
+                 </soapenv:Envelope>
       DependsOn:
       - MessageHandlerApi
       - ApiGatewayRole
