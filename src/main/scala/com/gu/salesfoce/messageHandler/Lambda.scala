@@ -33,17 +33,13 @@ object Lambda extends Logging {
   val okXml =
     """
       |<?xml version="1.0" encoding="UTF-8"?>
-      |<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-      | <soapenv:Body>
-      |  <element name="notificationsResponse">
-      |    <complexType>
-      |        <sequence>
-      |            <element name="Ack" type="xsd:boolean" />
-      |        </sequence>
-      |    </complexType>
-      |</element>
-      | </soapenv:Body>
-      |</soapenv:Envelope>
+      |<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/">
+      |	<soapenv:Body>
+      |		<notificationsResponse xmlns="http://soap.sforce.com/2005/09/outbound">
+      |			<Ack>true</Ack>
+      |		</notificationsResponse>
+      |	</soapenv:Body>
+      |<soapenv:Envelope>
     """.stripMargin
   val okResponse = ApiResponse("200", Headers(), okXml)
 
