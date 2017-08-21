@@ -39,12 +39,5 @@ object APIGatewayResponse extends Logging {
     writer.write(Json.stringify(jsonResponse))
     writer.close()
   }
-  //TODO IF WE KEEP THE FAILURE EMAIL LAMBDAS HERE WE SHOULD RENAME THESE TO SOMETHING MORE GENERIC
-  //  val successfulCancellation = AutoCancelResponse("200", new Headers, "Success")
-  //  def noActionRequired(reason: String) = AutoCancelResponse("200", new Headers, s"Auto-cancellation is not required: $reason")
-  //
-  //  val unauthorized = AutoCancelResponse("401", new Headers, "Credentials are missing or invalid")
-  //  val badRequest = AutoCancelResponse("400", new Headers, "Failure to parse XML successfully")
-  //  def internalServerError(error: String) = AutoCancelResponse("500", new Headers, s"Failed to process auto-cancellation with the following error: $error")
 
 }

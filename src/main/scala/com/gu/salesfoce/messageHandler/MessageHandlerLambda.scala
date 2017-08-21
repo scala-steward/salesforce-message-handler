@@ -1,15 +1,16 @@
 package com.gu.salesfoce.messageHandler
 
 import com.amazonaws.services.lambda.runtime.Context
-import java.io.{ InputStream, OutputStream }
+import java.io.{ ByteArrayInputStream, InputStream, OutputStream }
+
 import scala.concurrent.duration.Duration
 import java.util.concurrent.Executors
+import javax.xml.bind.JAXBContext
+import javax.xml.soap.MessageFactory
 
-import com.amazonaws.auth.profile.ProfileCredentialsProvider
-import com.amazonaws.auth.{ AWSCredentialsProviderChain, InstanceProfileCredentialsProvider }
-import com.amazonaws.regions.Regions.EU_WEST_1
-import com.amazonaws.services.sqs.AmazonSQSClient
+import scala.collection.JavaConversions._
 import com.gu.salesfoce.messageHandler.ResponseModels.{ ApiResponse, Headers }
+import com.sforce.soap._2005._09.outbound._
 import play.api.libs.json.Json
 
 import scala.concurrent.{ Await, ExecutionContext }
@@ -49,11 +50,25 @@ trait MessageHandler extends Logging {
 
   val okResponse = ApiResponse("200", Headers(), okXml)
 
+  def getNotifications(requestBody: String) = {
+    logger.info(s"trying to parse ")
+    val is = new ByteArrayInputStream(requestBody.getBytes)
+    val soapMessage = MessageFactory.newInstance().createMessage(null, is)
+    val body = soapMessage.getSOAPBody
+    val jc = JAXBContext.newInstance(classOf[Notifications])
+    val unmarshaller = jc.createUnmarshaller()
+    val je = unmarshaller.unmarshal(body.extractContentAsDocument(), classOf[Notifications])
+    val notifications = je.getValue()
+    val notificationList = notifications.getNotification
+    logger.info(s"notificationList is ${notificationList.size()}")
+  }
+
   def handleRequest(inputStream: InputStream, outputStream: OutputStream, context: Context): Unit = {
     val stage = Env().stage.toUpperCase
     logger.info(s"Salesforce message handler lambda ${stage} is starting up...")
     val inputEvent = Json.parse(inputStream)
     val body = (inputEvent \ "body").as[String]
+    getNotifications(body)
     val queueName = s"salesforce-outbound-messages-${stage}"
     logger.info(s"sending message to queue $queueName")
     val response = queueClient.send(queueName, body).map {
