@@ -54,11 +54,11 @@ Resources:
             Statement:
               Effect: Allow
               Action: sqs:sendMessage
-              Resource: !Sub arn:aws:sqs:${AWS::Region}:${AWS::AccountId}:salesforce-outbound-messages-${Stage}
-  SalesforceOutboundMessagesLambda:
+              Resource: !Sub arn:aws:sqs:${AWS::Region}:${AWS::AccountId}:salesforce-message-handler-${Stage}
+  SalesforceMessageHandlerLambda:
     Type: AWS::Lambda::Function
     Properties:
-      FunctionName: !Sub salesforce-outbound-messages-${Stage}
+      FunctionName: !Sub salesforce-message-handler-${Stage}
       Code:
         S3Bucket:
           Ref: DeployBucket
@@ -81,7 +81,7 @@ Resources:
               Action: lambda:invokeFunction
               FunctionName: !Sub salesforce-outbound-messages-${Stage}
               Principal: apigateway.amazonaws.com
-          DependsOn: SalesforceOutboundMessagesLambda
+          DependsOn: SalesforceMessageHandlerLambda
 
   MessageHandlerApi:
       Type: "AWS::ApiGateway::RestApi"
@@ -107,10 +107,10 @@ Resources:
           Integration:
             Type: AWS_PROXY
             IntegrationHttpMethod: POST
-            Uri: !Sub arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${SalesforceOutboundMessagesLambda.Arn}/invocations
+            Uri: !Sub arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${SalesforceMessageHandlerLambda.Arn}/invocations
       DependsOn:
       - MessageHandlerApi
-      - SalesforceOutboundMessagesLambda
+      - SalesforceMessageHandlerLambda
       - MessageHandlerApiResource
 
   MessageHandlerApiStage:
