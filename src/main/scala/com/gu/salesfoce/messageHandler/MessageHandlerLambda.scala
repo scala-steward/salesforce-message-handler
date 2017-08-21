@@ -76,7 +76,7 @@ trait MessageHandler extends Logging {
     val notifications = parseMessage(body)
 
     notifications.foreach { notification =>
-      val queueMessage = QueueMessage(notification.getId)
+      val queueMessage = QueueMessage(notification.getSObject.getId)
       val queueMessageString = Json.prettyPrint(Json.toJson(queueMessage))
 
       logger.info(s"sending message to queue $queueName")
