@@ -26,6 +26,7 @@ object Env {
     Option(System.getenv("Stack")).getOrElse("DEV"),
     Option(System.getenv("Stage")).getOrElse("DEV"))
 }
+
 trait RealDependencies {
   val queueClient = SqsClient
 }
@@ -50,36 +51,47 @@ trait MessageHandler extends Logging {
 
   val okResponse = ApiResponse("200", Headers(), okXml)
 
-  def getNotifications(requestBody: String) = {
+  def parseMessage(requestBody: String): List[ContactNotification] = {
     logger.info(s"trying to parse ")
     val is = new ByteArrayInputStream(requestBody.getBytes)
-    val soapMessage = MessageFactory.newInstance().createMessage(null, is)
+    val messageFactory = MessageFactory.newInstance()
+    val soapMessage = messageFactory.createMessage(null, is)
     val body = soapMessage.getSOAPBody
     val jc = JAXBContext.newInstance(classOf[Notifications])
     val unmarshaller = jc.createUnmarshaller()
     val je = unmarshaller.unmarshal(body.extractContentAsDocument(), classOf[Notifications])
     val notifications = je.getValue()
-    val notificationList = notifications.getNotification
-    logger.info(s"notificationList is ${notificationList.size()}")
+    notifications.getNotification.toList
   }
+
+  case class QueueMessage(contactId: String)
+
+  implicit val messageFormat = Json.format[QueueMessage]
 
   def handleRequest(inputStream: InputStream, outputStream: OutputStream, context: Context): Unit = {
     val stage = Env().stage.toUpperCase
     logger.info(s"Salesforce message handler lambda ${stage} is starting up...")
+    val queueName = s"salesforce-outbound-messages-${stage}"
     val inputEvent = Json.parse(inputStream)
     val body = (inputEvent \ "body").as[String]
-    getNotifications(body)
-    val queueName = s"salesforce-outbound-messages-${stage}"
-    logger.info(s"sending message to queue $queueName")
-    val response = queueClient.send(queueName, body).map {
-      case Success(r) =>
-        logger.info("successfully sent to queue")
-        APIGatewayResponse.outputForAPIGateway(outputStream, okResponse)
-      case Failure(ex) =>
-        logger.error("could not send message to queue", ex)
-        APIGatewayResponse.outputForAPIGateway(outputStream, ApiResponse("500", Headers(), "server error")) //see if we need anything better than this!
+    val notifications = parseMessage(body)
+
+    notifications.foreach { notification =>
+      val queueMessage = QueueMessage(notification.getId)
+      val queueMessageString = Json.prettyPrint(Json.toJson(queueMessage))
+
+      logger.info(s"sending message to queue $queueName")
+      val response = queueClient.send(queueName, queueMessageString).map {
+        case Success(r) =>
+          logger.info("successfully sent to queue")
+          APIGatewayResponse.outputForAPIGateway(outputStream, okResponse)
+        case Failure(ex) =>
+          logger.error("could not send message to queue", ex)
+          APIGatewayResponse.outputForAPIGateway(outputStream, ApiResponse("500", Headers(), "server error")) //see if we need anything better than this!
+      }
+      Await.ready(response, Duration.Inf) //TODO SEE WHAT IS THE CORRECT WAY OF WAITING FOR THE FUTURE
     }
-    Await.ready(response, Duration.Inf) //TODO SEE WHAT IS THE CORRECT WAY OF WAITING FOR THE FUTURE
+
   }
 
 }
