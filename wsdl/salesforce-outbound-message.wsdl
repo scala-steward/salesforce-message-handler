@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- 
 Salesforce.com Outbound Notification Web Services API Version 1.0 
-Generated on 2017-08-17 14:54:51 +0000.
+Generated on 2017-08-21 15:54:16 +0000.
 
 Copyright 2005-2017 Salesforce.com, Inc.
 All Rights Reserved
@@ -49,25 +49,6 @@ All Rights Reserved
                 <complexContent>
                     <extension base="ens:sObject">
                         <sequence>
-                        <element name="AccountId" nillable="true" minOccurs="0" type="ent:ID"/>
-                        <element name="Delivery_Information__c" nillable="true" minOccurs="0" type="xsd:string"/>
-                        <element name="Email" nillable="true" minOccurs="0" type="xsd:string"/>
-                        <element name="FirstName" nillable="true" minOccurs="0" type="xsd:string"/>
-                        <element name="IdentityID__c" nillable="true" minOccurs="0" type="xsd:string"/>
-                        <element name="LastName" nillable="true" minOccurs="0" type="xsd:string"/>
-                        <element name="MailingCity" nillable="true" minOccurs="0" type="xsd:string"/>
-                        <element name="MailingCountry" nillable="true" minOccurs="0" type="xsd:string"/>
-                        <element name="MailingPostalCode" nillable="true" minOccurs="0" type="xsd:string"/>
-                        <element name="MailingState" nillable="true" minOccurs="0" type="xsd:string"/>
-                        <element name="MailingStreet" nillable="true" minOccurs="0" type="xsd:string"/>
-                        <element name="OtherCity" nillable="true" minOccurs="0" type="xsd:string"/>
-                        <element name="OtherCountry" nillable="true" minOccurs="0" type="xsd:string"/>
-                        <element name="OtherPostalCode" nillable="true" minOccurs="0" type="xsd:string"/>
-                        <element name="OtherState" nillable="true" minOccurs="0" type="xsd:string"/>
-                        <element name="OtherStreet" nillable="true" minOccurs="0" type="xsd:string"/>
-                        <element name="Phone" nillable="true" minOccurs="0" type="xsd:string"/>
-                        <element name="RecordTypeId" nillable="true" minOccurs="0" type="ent:ID"/>
-                        <element name="Salutation" nillable="true" minOccurs="0" type="xsd:string"/>
                         </sequence>
                     </extension>
                 </complexContent>
@@ -149,7 +130,7 @@ All Rights Reserved
     <service name="NotificationService">
         <documentation>Notification Service Implementation</documentation>
         <port binding="tns:NotificationBinding" name="Notification">
-            <soap:address location="https://29q548qj99.execute-api.eu-west-1.amazonaws.com/CODE/contact?apiToken=SomeTokenValue"/>
+            <soap:address location="https://your-url/endpoint"/>
         </port>
     </service>
     
