@@ -54,7 +54,7 @@ Resources:
             Statement:
               Effect: Allow
               Action: sqs:sendMessage
-              Resource: !Sub arn:aws:sqs:${AWS::Region}:${AWS::AccountId}:salesforce-message-handler-${Stage}
+              Resource: !Sub arn:aws:sqs:${AWS::Region}:${AWS::AccountId}:salesforce-outbound-messages-${Stage}
   SalesforceMessageHandlerLambda:
     Type: AWS::Lambda::Function
     Properties:
@@ -79,7 +79,7 @@ Resources:
           Type: AWS::Lambda::Permission
           Properties:
               Action: lambda:invokeFunction
-              FunctionName: !Sub salesforce-outbound-messages-${Stage}
+              FunctionName: !Sub salesforce-message-handler-${Stage}
               Principal: apigateway.amazonaws.com
           DependsOn: SalesforceMessageHandlerLambda
 

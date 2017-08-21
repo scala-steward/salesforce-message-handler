@@ -48,8 +48,9 @@ object Lambda extends Logging {
     logger.info(s"Salesforce message handler lambda ${stage} is starting up...")
     val inputEvent = Json.parse(inputStream)
     val body = (inputEvent \ "body").as[String]
-
-    val response = SqsClient.send(s"salesforce-outbound-messages-${stage}", body).map {
+    val queueName = s"salesforce-outbound-messages-${stage}"
+    logger.info(s"sending message to queue $queueName")
+    val response = SqsClient.send(queueName, body).map {
       case Success(r) =>
         logger.info("successfully sent to queue")
         APIGatewayResponse.outputForAPIGateway(outputStream, okResponse)
