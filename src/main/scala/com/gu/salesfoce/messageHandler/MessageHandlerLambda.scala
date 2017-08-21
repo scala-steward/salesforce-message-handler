@@ -53,6 +53,7 @@ trait MessageHandler extends Logging {
 
   def parseMessage(requestBody: String): List[ContactNotification] = {
     logger.info(s"trying to parse ")
+    logger.info(requestBody) //TODO DELETE THIS LATER!!
     val is = new ByteArrayInputStream(requestBody.getBytes)
     val messageFactory = MessageFactory.newInstance()
     val soapMessage = messageFactory.createMessage(null, is)
