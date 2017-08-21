@@ -53,7 +53,7 @@ Resources:
           PolicyDocument:
             Statement:
               Effect: Allow
-              Action: sqs:sendMessage
+              Action: "*"
               Resource: !Sub arn:aws:sqs:${AWS::Region}:${AWS::AccountId}:salesforce-outbound-messages-${Stage}
   SalesforceMessageHandlerLambda:
     Type: AWS::Lambda::Function
