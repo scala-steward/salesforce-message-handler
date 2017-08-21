@@ -49,7 +49,7 @@ object Lambda extends Logging {
     val inputEvent = Json.parse(inputStream)
     val body = (inputEvent \ "body").as[String]
 
-    val response = SqsClient.send(s"salesforce-outbound-messages-zuora-${stage}.fifo", body).map {
+    val response = SqsClient.send(s"salesforce-outbound-messages-${stage}", body).map {
       case Success(r) =>
         logger.info("successfully sent to queue")
         APIGatewayResponse.outputForAPIGateway(outputStream, okResponse)
