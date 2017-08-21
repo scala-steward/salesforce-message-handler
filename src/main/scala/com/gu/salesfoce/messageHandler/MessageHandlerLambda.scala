@@ -37,9 +37,7 @@ trait MessageHandler extends Logging {
   val ThreadCount = 10
   implicit val executionContext = ExecutionContext.fromExecutor(Executors.newFixedThreadPool(ThreadCount))
 
-  val okXml =
-    """
-      |<?xml version="1.0" encoding="UTF-8"?>
+  val okXml ="""<?xml version="1.0" encoding="UTF-8"?>
       |<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/">
       |	<soapenv:Body>
       |		<notificationsResponse xmlns="http://soap.sforce.com/2005/09/outbound">
