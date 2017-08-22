@@ -1,23 +1,21 @@
 package com.gu.salesfoce.messageHandler
 
-import com.amazonaws.services.lambda.runtime.Context
-import java.io.{ ByteArrayInputStream, InputStream, OutputStream }
-
-import scala.concurrent.duration.Duration
+import java.io.{ByteArrayInputStream, InputStream, OutputStream}
 import java.util.concurrent.Executors
 import javax.xml.bind.JAXBContext
 import javax.xml.soap.MessageFactory
 
+import com.amazonaws.services.lambda.runtime.Context
 import com.amazonaws.services.sqs.model.SendMessageResult
+import com.gu.salesfoce.messageHandler.APIGatewayResponse._
+import com.gu.salesfoce.messageHandler.ResponseModels.{ApiResponse, Headers}
+import com.sforce.soap._2005._09.outbound._
+import play.api.libs.json.{JsValue, Json}
 
 import scala.collection.JavaConversions._
-import com.gu.salesfoce.messageHandler.ResponseModels.{ ApiResponse, Headers }
-import com.sforce.soap._2005._09.outbound._
-import play.api.libs.json.{ JsValue, Json }
-import com.gu.salesfoce.messageHandler.APIGatewayResponse._
-
-import scala.concurrent.{ Await, ExecutionContext, Future }
-import scala.util.{ Failure, Success, Try }
+import scala.concurrent.duration.Duration
+import scala.concurrent.{Await, ExecutionContext, Future}
+import scala.util.{Failure, Try}
 
 trait RealDependencies {
   val queueClient = SqsClient
@@ -44,7 +42,6 @@ trait MessageHandler extends Logging {
   val okResponse = ApiResponse("200", Headers(), okXml)
 
   def parseMessage(requestBody: String): List[ContactNotification] = {
-    logger.info(requestBody) //TODO DELETE THIS LATER!!
     val is = new ByteArrayInputStream(requestBody.getBytes)
     val messageFactory = MessageFactory.newInstance()
     val soapMessage = messageFactory.createMessage(null, is)
@@ -100,7 +97,7 @@ trait MessageHandler extends Logging {
         if (errors.nonEmpty) {
           errors.foreach(error =>
             logger.error(s"error while trying to send message to queue", error))
-            outputForAPIGateway(outputStream, internalServerError)
+          outputForAPIGateway(outputStream, internalServerError)
         } else {
           outputForAPIGateway(outputStream, okResponse)
         }
