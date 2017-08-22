@@ -5,7 +5,6 @@ import com.amazonaws.auth.{ AWSCredentialsProviderChain, EnvironmentVariableCred
 import com.amazonaws.regions.Regions.EU_WEST_1
 import com.amazonaws.services.sqs.AmazonSQSClient
 import com.amazonaws.services.sqs.model._
-import play.api.libs.json.Json
 
 import scala.concurrent.{ ExecutionContext, Future }
 import scala.util.Try
