@@ -40,4 +40,7 @@ object APIGatewayResponse extends Logging {
     writer.close()
   }
 
+  val unauthorized = ApiResponse("401", Headers(), "Credentials are missing or invalid")
+  val internalServerError = ApiResponse("500", new Headers, "Internal server error")
+
 }

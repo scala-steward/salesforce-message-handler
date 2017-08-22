@@ -8,13 +8,16 @@ import java.util.concurrent.Executors
 import javax.xml.bind.JAXBContext
 import javax.xml.soap.MessageFactory
 
+import com.amazonaws.services.sqs.model.SendMessageResult
+
 import scala.collection.JavaConversions._
 import com.gu.salesfoce.messageHandler.ResponseModels.{ ApiResponse, Headers }
 import com.sforce.soap._2005._09.outbound._
 import play.api.libs.json.{ JsValue, Json }
+import com.gu.salesfoce.messageHandler.APIGatewayResponse._
 
-import scala.concurrent.{ Await, ExecutionContext }
-import scala.util.{ Failure, Success }
+import scala.concurrent.{ Await, ExecutionContext, Future }
+import scala.util.{ Failure, Success, Try }
 
 trait RealDependencies {
   val queueClient = SqsClient
@@ -23,6 +26,7 @@ trait RealDependencies {
 trait MessageHandler extends Logging {
   def queueClient: QueueClient
 
+  val queueName = s"salesforce-outbound-messages-${Config.stage}"
   val ThreadCount = 10
   implicit val executionContext = ExecutionContext.fromExecutor(Executors.newFixedThreadPool(ThreadCount))
 
@@ -62,11 +66,6 @@ trait MessageHandler extends Logging {
     val maybeApiClientId = (inputEvent \ "queryStringParameters" \ "apiClientId").asOpt[String]
     val maybeApiClientToken = (inputEvent \ "queryStringParameters" \ "apiToken").asOpt[String]
     val maybeCredentials = (maybeApiClientId, maybeApiClientToken)
-    //TODO DONT LOG THE SECRETS!
-    logger.info(s"token is $maybeApiClientToken")
-    logger.info(s"clientid is $maybeApiClientId")
-    logger.info(s"expected token is ${Config.apiToken}")
-    logger.info(s"expected client id is ${Config.apiClientId}")
     maybeCredentials match {
       case (Some(apiClientId), Some(apiToken)) => {
         (apiClientId == Config.apiClientId && apiToken == Config.apiToken)
@@ -78,34 +77,36 @@ trait MessageHandler extends Logging {
     }
   }
 
+  def sendToQueue(notification: ContactNotification): Future[Try[SendMessageResult]] = {
+    val queueMessage = QueueMessage(notification.getSObject.getId)
+    val queueMessageString = Json.prettyPrint(Json.toJson(queueMessage))
+    queueClient.send(queueName, queueMessageString)
+  }
+
   def handleRequest(inputStream: InputStream, outputStream: OutputStream, context: Context): Unit = {
 
     logger.info(s"Salesforce message handler lambda ${Config.stage} is starting up...")
-    val queueName = s"salesforce-outbound-messages-${Config.stage}"
     val inputEvent = Json.parse(inputStream)
-
-    if (credentialsAreValid(inputEvent)) {
-
+    if (!credentialsAreValid(inputEvent)) {
+      logger.info("Request from Zuora could not be authenticated")
+      outputForAPIGateway(outputStream, unauthorized)
+    } else {
       logger.info("Authenticated request successfully...")
+      logger.info(s"sending messages to queue $queueName")
       val body = (inputEvent \ "body").as[String]
-
       val notifications = parseMessage(body)
-      //map here and deal with the list of futures later!
-      notifications.foreach { notification =>
-        val queueMessage = QueueMessage(notification.getSObject.getId)
-        val queueMessageString = Json.prettyPrint(Json.toJson(queueMessage))
-        //todo fix this to work with multiple notifications IT SHOULD NOT RETURN SUCCESS AFTER THE FIRST ONE
-        logger.info(s"sending message to queue $queueName")
-        val response = queueClient.send(queueName, queueMessageString).map {
-          case Success(r) =>
-            logger.info("successfully sent to queue")
-            APIGatewayResponse.outputForAPIGateway(outputStream, okResponse)
-          case Failure(ex) =>
-            logger.error("could not send message to queue", ex)
-            APIGatewayResponse.outputForAPIGateway(outputStream, ApiResponse("500", Headers(), "server error")) //see if we need anything better than this!
+      val FutureResponses = notifications.map(sendToQueue)
+      val future = Future.sequence(FutureResponses).map { responses =>
+        val errors = responses collect { case Failure(error) => error }
+        if (errors.nonEmpty) {
+          errors.foreach(error =>
+            logger.error(s"error while trying to send message to queue", error))
+          outputForAPIGateway(outputStream, okResponse)
+        } else {
+          outputForAPIGateway(outputStream, internalServerError)
         }
-        Await.ready(response, Duration.Inf) //TODO SEE WHAT IS THE CORRECT WAY OF WAITING FOR THE FUTURE
       }
+      Await.ready(future, Duration.Inf)
     }
   }
 
