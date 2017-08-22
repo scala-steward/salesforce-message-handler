@@ -49,6 +49,12 @@ Resources:
               Action:
                 - lambda:InvokeFunction
               Resource: "*"
+        - PolicyName: PrivateBucket
+          PolicyDocument:
+            Statement:
+               Effect: Allow
+               Action: s3:GetObject
+               Resource: !Sub arn:aws:s3:::membership-private/${Stage}/*
         - PolicyName: SQSPutInQueue
           PolicyDocument:
             Statement:

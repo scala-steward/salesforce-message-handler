@@ -1,7 +1,7 @@
 package com.gu.salesfoce.messageHandler
 
-import com.amazonaws.auth.{AWSCredentialsProviderChain, InstanceProfileCredentialsProvider, SystemPropertiesCredentialsProvider}
 import com.amazonaws.auth.profile.ProfileCredentialsProvider
+import com.amazonaws.auth.{ AWSCredentialsProviderChain, DefaultAWSCredentialsProviderChain }
 import com.amazonaws.services.s3.AmazonS3ClientBuilder
 import com.typesafe.config.ConfigFactory
 
@@ -22,8 +22,8 @@ object Config {
   val stage = Env().stage.toUpperCase
 
   val credentialsProvider = new AWSCredentialsProviderChain(
-    InstanceProfileCredentialsProvider.getInstance(),
-    new ProfileCredentialsProvider("membership"))
+    new ProfileCredentialsProvider("membership"),
+    new DefaultAWSCredentialsProviderChain())
 
   val s3Client = AmazonS3ClientBuilder
     .standard()

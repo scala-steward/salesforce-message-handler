@@ -62,6 +62,7 @@ trait MessageHandler extends Logging {
     val maybeApiClientId = (inputEvent \ "queryStringParameters" \ "apiClientId").asOpt[String]
     val maybeApiClientToken = (inputEvent \ "queryStringParameters" \ "apiToken").asOpt[String]
     val maybeCredentials = (maybeApiClientId, maybeApiClientToken)
+    //TODO DONT LOG THE SECRETS!
     logger.info(s"token is $maybeApiClientToken")
     logger.info(s"clientid is $maybeApiClientId")
     logger.info(s"expected token is ${Config.apiToken}")
@@ -89,7 +90,7 @@ trait MessageHandler extends Logging {
       val body = (inputEvent \ "body").as[String]
 
       val notifications = parseMessage(body)
-
+      //map here and deal with the list of futures later!
       notifications.foreach { notification =>
         val queueMessage = QueueMessage(notification.getSObject.getId)
         val queueMessageString = Json.prettyPrint(Json.toJson(queueMessage))
