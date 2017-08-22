@@ -44,7 +44,6 @@ trait MessageHandler extends Logging {
   val okResponse = ApiResponse("200", Headers(), okXml)
 
   def parseMessage(requestBody: String): List[ContactNotification] = {
-    logger.info(s"trying to parse ")
     logger.info(requestBody) //TODO DELETE THIS LATER!!
     val is = new ByteArrayInputStream(requestBody.getBytes)
     val messageFactory = MessageFactory.newInstance()
@@ -92,7 +91,6 @@ trait MessageHandler extends Logging {
       outputForAPIGateway(outputStream, unauthorized)
     } else {
       logger.info("Authenticated request successfully...")
-      logger.info(s"sending messages to queue $queueName")
       val body = (inputEvent \ "body").as[String]
       val notifications = parseMessage(body)
       val FutureResponses = notifications.map(sendToQueue)
@@ -101,9 +99,9 @@ trait MessageHandler extends Logging {
         if (errors.nonEmpty) {
           errors.foreach(error =>
             logger.error(s"error while trying to send message to queue", error))
-          outputForAPIGateway(outputStream, okResponse)
+            outputForAPIGateway(outputStream, internalServerError)
         } else {
-          outputForAPIGateway(outputStream, internalServerError)
+          outputForAPIGateway(outputStream, okResponse)
         }
       }
       Await.ready(future, Duration.Inf)
