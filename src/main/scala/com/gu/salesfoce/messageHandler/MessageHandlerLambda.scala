@@ -93,6 +93,7 @@ trait MessageHandler extends Logging {
       logger.info("Authenticated request successfully...")
       val body = (inputEvent \ "body").as[String]
       val notifications = parseMessage(body)
+      logger.info(s"found ${notifications.size} contact(s) in the salesforce xml")
       val FutureResponses = notifications.map(sendToQueue)
       val future = Future.sequence(FutureResponses).map { responses =>
         val errors = responses collect { case Failure(error) => error }
