@@ -1,0 +1,136 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: handle outbound messages from salesforce to update zuora and identity
+Parameters:
+  Stack:
+    Description: Stack name
+    Type: String
+    Default: membership
+  App:
+    Description: Application name
+    Type: String
+    Default: salesforce-message-handler
+  Stage:
+    Description: Stage name
+    Type: String
+    AllowedValues:
+      - CODE
+      - PROD
+    Default: CODE
+  DeployBucket:
+    Description: Bucket where RiffRaff uploads artifacts on deploy
+    Type: String
+    Default: membership-dist
+Resources:
+  ExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+            Action: sts:AssumeRole
+      Path: /
+      Policies:
+        - PolicyName: logs
+          PolicyDocument:
+            Statement:
+              Effect: Allow
+              Action:
+                - logs:CreateLogGroup
+                - logs:CreateLogStream
+                - logs:PutLogEvents
+              Resource: arn:aws:logs:*:*:*
+        - PolicyName: lambda
+          PolicyDocument:
+            Statement:
+              Effect: Allow
+              Action:
+                - lambda:InvokeFunction
+              Resource: "*"
+        - PolicyName: PrivateBucket
+          PolicyDocument:
+            Statement:
+               Effect: Allow
+               Action: s3:GetObject
+               Resource: !Sub arn:aws:s3:::membership-private/${Stage}/salesforce-message-handler.private.conf
+        - PolicyName: SQSPutInQueue
+          PolicyDocument:
+            Statement:
+              Effect: Allow
+              Action: "*"
+              Resource: !Sub arn:aws:sqs:${AWS::Region}:${AWS::AccountId}:salesforce-outbound-messages-${Stage}
+  SalesforceMessageHandlerLambda:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: !Sub salesforce-message-handler-${Stage}
+      Code:
+        S3Bucket:
+          Ref: DeployBucket
+        S3Key: !Sub ${Stack}/${Stage}/${App}/${App}.jar
+      Environment:
+        Variables:
+          Stage: !Ref Stage
+          Stack: !Ref Stack
+          App: !Ref App
+      Description: parse salesforce outbound messages and put them in a queue
+      Handler: com.gu.salesforce.messageHandler.Lambda::handleRequest
+      MemorySize: 512
+      Role: !GetAtt ExecutionRole.Arn
+      Runtime: java8
+      Timeout: 300
+
+  MessageHandlerApiPermission:
+          Type: AWS::Lambda::Permission
+          Properties:
+              Action: lambda:invokeFunction
+              FunctionName: !Sub salesforce-message-handler-${Stage}
+              Principal: apigateway.amazonaws.com
+          DependsOn: SalesforceMessageHandlerLambda
+
+  MessageHandlerApi:
+      Type: "AWS::ApiGateway::RestApi"
+      Properties:
+          Description: Api to handle salesforce outbound messages
+          Name: !Sub salesforce-message-handler-${Stage}
+
+  MessageHandlerApiResource:
+      Type: AWS::ApiGateway::Resource
+      Properties:
+          RestApiId: !Ref MessageHandlerApi
+          ParentId: !GetAtt [MessageHandlerApi, RootResourceId]
+          PathPart: contact
+      DependsOn: MessageHandlerApi
+
+  ContactMethod:
+      Type: AWS::ApiGateway::Method
+      Properties:
+          AuthorizationType: NONE
+          RestApiId: !Ref MessageHandlerApi
+          ResourceId: !Ref MessageHandlerApiResource
+          HttpMethod: POST
+          Integration:
+            Type: AWS_PROXY
+            IntegrationHttpMethod: POST
+            Uri: !Sub arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${SalesforceMessageHandlerLambda.Arn}/invocations
+      DependsOn:
+      - MessageHandlerApi
+      - SalesforceMessageHandlerLambda
+      - MessageHandlerApiResource
+
+  MessageHandlerApiStage:
+    Type: AWS::ApiGateway::Stage
+    Properties:
+        Description: Stage for salesforce message handler API
+        RestApiId: !Ref MessageHandlerApi
+        DeploymentId: !Ref MessageHandlerAPIDeployment
+        StageName: !Sub ${Stage}
+    DependsOn: ContactMethod
+
+  MessageHandlerAPIDeployment:
+    Type: AWS::ApiGateway::Deployment
+    Properties:
+        Description: Deploys the message handler API into an environment/stage
+        RestApiId: !Ref MessageHandlerApi
+    DependsOn: ContactMethod

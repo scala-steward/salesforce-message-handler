@@ -1,0 +1,11 @@
+stacks: [membership]
+regions: [eu-west-1]
+
+deployments:
+  salesforce-message-handler:
+    type: aws-lambda
+    parameters:
+      bucket: membership-dist
+      functionNames: [salesforce-message-handler-]
+      fileName: salesforce-message-handler.jar
+      prefixStack: false
