@@ -8,7 +8,6 @@ import javax.xml.soap.MessageFactory
 import com.amazonaws.services.lambda.runtime.Context
 import com.amazonaws.services.sqs.model.SendMessageResult
 import com.gu.salesforce.messageHandler.APIGatewayResponse._
-import com.gu.salesforce.messageHandler.ResponseModels.{ ApiResponse, Headers }
 import com.sforce.soap._2005._09.outbound._
 import play.api.libs.json.{ JsValue, Json }
 
@@ -28,18 +27,6 @@ trait MessageHandler extends Logging {
   val ThreadCount = 10
   implicit val executionContext = ExecutionContext.fromExecutor(Executors.newFixedThreadPool(ThreadCount))
 
-  val okXml =
-    """<?xml version="1.0" encoding="UTF-8"?>
-      |<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/">
-      |	<soapenv:Body>
-      |		<notificationsResponse xmlns="http://soap.sforce.com/2005/09/outbound">
-      |			<Ack>true</Ack>
-      |		</notificationsResponse>
-      |	</soapenv:Body>
-      |</soapenv:Envelope>
-    """.stripMargin
-
-  val okResponse = ApiResponse("200", Headers(), okXml)
   def parseMessage(requestBody: String) = {
     val is = new ByteArrayInputStream(requestBody.getBytes)
     val messageFactory = MessageFactory.newInstance()

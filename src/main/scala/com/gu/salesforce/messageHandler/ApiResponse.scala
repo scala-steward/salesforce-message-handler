@@ -41,5 +41,16 @@ object APIGatewayResponse extends Logging {
 
   val unauthorized = ApiResponse("401", Headers(), "Credentials are missing or invalid")
   val internalServerError = ApiResponse("500", new Headers, "Internal server error")
+  val okXml =
+    """<?xml version="1.0" encoding="UTF-8"?>
+      |<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/">
+      |	<soapenv:Body>
+      |		<notificationsResponse xmlns="http://soap.sforce.com/2005/09/outbound">
+      |			<Ack>true</Ack>
+      |		</notificationsResponse>
+      |	</soapenv:Body>
+      |</soapenv:Envelope>
+    """.stripMargin
 
+  val okResponse = ApiResponse("200", Headers(), okXml)
 }
