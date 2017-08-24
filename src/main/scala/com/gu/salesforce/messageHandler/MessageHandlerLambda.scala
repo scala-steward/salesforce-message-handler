@@ -108,10 +108,10 @@ trait MessageHandler extends Logging {
       val body = (inputEvent \ "body").as[String]
       val parsedMessage = parseMessage(body)
       if (parsedMessage.getOrganizationId.startsWith(Config.salesforceOrganizationId)) {
+        processNotifications(parsedMessage.getNotification.toList, outputStream)
+      } else {
         logger.info("Unexpected salesforce organization id in xml message")
         outputForAPIGateway(outputStream, unauthorized)
-      } else {
-        processNotifications(parsedMessage.getNotification.toList, outputStream)
       }
     }
   }
