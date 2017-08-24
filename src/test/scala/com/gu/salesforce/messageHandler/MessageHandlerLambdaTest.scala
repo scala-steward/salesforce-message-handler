@@ -3,7 +3,7 @@ package com.gu.salesforce.messageHandler
 import java.io.{ ByteArrayOutputStream, OutputStream }
 
 import com.amazonaws.services.sqs.model.SendMessageResult
-import com.gu.salesfoce.messageHandler.{ MessageHandler, QueueClient, SqsClient }
+import com.gu.salesforce.messageHandler.{ MessageHandler, QueueClient, SqsClient }
 import org.specs2.mutable.Specification
 
 import scala.concurrent.ExecutionContext.Implicits.global

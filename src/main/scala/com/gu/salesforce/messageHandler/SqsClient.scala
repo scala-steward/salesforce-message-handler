@@ -1,4 +1,4 @@
-package com.gu.salesfoce.messageHandler
+package com.gu.salesforce.messageHandler
 
 import com.amazonaws.auth.profile.ProfileCredentialsProvider
 import com.amazonaws.auth.{ AWSCredentialsProviderChain, EnvironmentVariableCredentialsProvider, InstanceProfileCredentialsProvider }
@@ -14,14 +14,8 @@ trait QueueClient {
 }
 
 object SqsClient extends QueueClient with Logging {
-
-  lazy val CredentialsProvider = new AWSCredentialsProviderChain(
-    new ProfileCredentialsProvider("membership"),
-    new InstanceProfileCredentialsProvider(false),
-    new EnvironmentVariableCredentialsProvider())
-
   private val sqsClient = AmazonSQSClient.builder
-    .withCredentials(CredentialsProvider)
+    .withCredentials(Config.credentialsProvider)
     .withRegion(EU_WEST_1)
     .build()
 
@@ -29,7 +23,7 @@ object SqsClient extends QueueClient with Logging {
     val queueUrl = sqsClient.getQueueUrl(queueName).getQueueUrl
 
     def sendToQueue(msg: String): SendMessageResult = {
-      logger.info(s"sending to queue $queueUrl")
+      logger.info(s"sending message to queue $queueUrl: $msg")
       val sendMessageRequest = new SendMessageRequest(queueUrl, msg)
       sqsClient.sendMessage(sendMessageRequest)
     }
@@ -37,5 +31,4 @@ object SqsClient extends QueueClient with Logging {
       Try(sendToQueue(message))
     }
   }
-
 }

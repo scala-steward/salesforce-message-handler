@@ -1,9 +1,9 @@
-package com.gu.salesfoce.messageHandler
+package com.gu.salesforce.messageHandler
 
 import java.io.{ OutputStream, OutputStreamWriter }
-import com.gu.salesfoce.messageHandler.ResponseWriters._
+import com.gu.salesforce.messageHandler.ResponseWriters._
 
-import com.gu.salesfoce.messageHandler.ResponseModels.{ ApiResponse, Headers }
+import com.gu.salesforce.messageHandler.ResponseModels.{ ApiResponse, Headers }
 import play.api.libs.json.{ Json, Writes }
 
 object ResponseModels {
@@ -35,7 +35,6 @@ object APIGatewayResponse extends Logging {
   def outputForAPIGateway(outputStream: OutputStream, response: ApiResponse): Unit = {
     val writer = new OutputStreamWriter(outputStream, "UTF-8")
     val jsonResponse = Json.toJson(response)
-    logger.info(s"Response will be: \n ${jsonResponse.toString}")
     writer.write(Json.stringify(jsonResponse))
     writer.close()
   }

@@ -1,4 +1,4 @@
-package com.gu.salesfoce.messageHandler
+package com.gu.salesforce.messageHandler
 
 import com.amazonaws.auth.profile.ProfileCredentialsProvider
 import com.amazonaws.auth.{ AWSCredentialsProviderChain, DefaultAWSCredentialsProviderChain }
@@ -14,8 +14,8 @@ object Config {
 
   object Env {
     def apply(): Env = Env(
-      Option(System.getenv("App")).getOrElse("DEV"),
-      Option(System.getenv("Stack")).getOrElse("DEV"),
+      Option(System.getenv("App")).getOrElse("salesforce-message-handler"),
+      Option(System.getenv("Stack")).getOrElse("membership"),
       Option(System.getenv("Stage")).getOrElse("CODE"))
   }
 
@@ -44,4 +44,5 @@ object Config {
 
   val apiClientId = configData.getString("apiClientId")
   val apiToken = configData.getString("apiToken")
+  val salesforceOrganizationId = configData.getString("salesforceOrganizationId")
 }

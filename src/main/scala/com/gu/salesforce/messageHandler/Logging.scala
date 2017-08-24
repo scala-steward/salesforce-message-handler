@@ -1,4 +1,4 @@
-package com.gu.salesfoce.messageHandler
+package com.gu.salesforce.messageHandler
 
 import org.slf4j.{ Logger, LoggerFactory }
 

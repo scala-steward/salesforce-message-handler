@@ -3,7 +3,7 @@ name := "salesforce-message-handler"
 
 organization := "com.gu"
 
-description:= "handle outbound messages from salesforce to update zuora and indentity"
+description:= "handle outbound messages from salesforce to update zuora and identity"
 
 version := "1.0"
 
