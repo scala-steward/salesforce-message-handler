@@ -1,7 +1,6 @@
 package com.gu.salesforce.messageHandler
 
 import java.io.{ ByteArrayInputStream, InputStream, OutputStream }
-import java.util.concurrent.Executors
 import javax.xml.bind.JAXBContext
 import javax.xml.soap.MessageFactory
 
@@ -10,7 +9,7 @@ import com.amazonaws.services.sqs.model.SendMessageResult
 import com.gu.salesforce.messageHandler.APIGatewayResponse._
 import com.sforce.soap._2005._09.outbound._
 import play.api.libs.json.{ JsValue, Json }
-
+import scala.concurrent.ExecutionContext.Implicits.global
 import scala.collection.JavaConversions._
 import scala.concurrent.duration.Duration
 import scala.concurrent.{ Await, ExecutionContext, Future }
@@ -24,8 +23,6 @@ trait MessageHandler extends Logging {
   def queueClient: QueueClient
 
   val queueName = s"salesforce-outbound-messages-${Config.stage}"
-  val ThreadCount = 10
-  implicit val executionContext = ExecutionContext.fromExecutor(Executors.newFixedThreadPool(ThreadCount))
 
   def parseMessage(requestBody: String) = {
     val is = new ByteArrayInputStream(requestBody.getBytes)
@@ -36,7 +33,6 @@ trait MessageHandler extends Logging {
     val unmarshaller = jc.createUnmarshaller()
     val je = unmarshaller.unmarshal(body.extractContentAsDocument(), classOf[Notifications])
     je.getValue()
-
   }
 
   case class QueueMessage(contactId: String)
@@ -102,7 +98,6 @@ trait MessageHandler extends Logging {
       }
     }
   }
-
 }
 
 object Lambda extends MessageHandler with RealDependencies
