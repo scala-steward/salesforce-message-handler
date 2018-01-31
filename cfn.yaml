@@ -76,7 +76,7 @@ Resources:
           App: !Ref App
       Description: parse salesforce outbound messages and put them in a queue
       Handler: com.gu.salesforce.messageHandler.Lambda::handleRequest
-      MemorySize: 512
+      MemorySize: 1536
       Role: !GetAtt ExecutionRole.Arn
       Runtime: java8
       Timeout: 300
