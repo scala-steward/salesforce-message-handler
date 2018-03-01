@@ -82,6 +82,7 @@ trait MessageHandler extends Logging {
   def handleRequest(inputStream: InputStream, outputStream: OutputStream, context: Context): Unit = {
 
     logger.info(s"Salesforce message handler lambda ${Config.stage} is starting up...")
+    logger.info(s"using config from ${Config.bucket}/${Config.key}")
     val inputEvent = Json.parse(inputStream)
     if (!credentialsAreValid(inputEvent)) {
       logger.info("Request could not be authenticated")
