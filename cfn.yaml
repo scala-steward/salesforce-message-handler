@@ -49,12 +49,6 @@ Resources:
               Action:
                 - lambda:InvokeFunction
               Resource: "*"
-        - PolicyName: UnEncryptedPrivateBucket
-          PolicyDocument:
-            Statement:
-               Effect: Allow
-               Action: s3:GetObject
-               Resource: !Sub arn:aws:s3:::membership-private/${Stage}/salesforce-message-handler.private.conf
         - PolicyName: PrivateBucket
           PolicyDocument:
             Statement:
