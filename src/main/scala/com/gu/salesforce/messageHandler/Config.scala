@@ -30,9 +30,11 @@ object Config {
     .withCredentials(credentialsProvider)
     .build()
 
+  val key = s"membership/salesforce-message-handler/$stage/salesforce-message-handler.private.conf"
+  val bucket = "gu-reader-revenue-private"
+
   val configData = {
-    val key = s"/$stage/salesforce-message-handler.private.conf"
-    val s3Object = s3Client.getObject("membership-private", s"$stage/salesforce-message-handler.private.conf")
+    val s3Object = s3Client.getObject(bucket, key)
     val source = Source.fromInputStream(s3Object.getObjectContent)
     try {
       val conf = source.mkString
