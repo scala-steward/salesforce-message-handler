@@ -25,6 +25,7 @@ libraryDependencies ++= Seq(
   "org.slf4j" % "slf4j-simple" % "1.7.25",
   "com.typesafe.play" %% "play-json" % "2.6.0",
   "org.scala-lang.modules" % "scala-xml_2.11" % "1.0.6",
+  "com.fasterxml.jackson.core" % "jackson-databind" % "2.8.11.1",
   "org.specs2" %% "specs2-core" % "3.9.4" % "test",
   "org.specs2" %% "specs2-matcher-extra" % "3.9.4" % "test",
   "org.specs2" % "specs2-mock_2.11" % "3.9.4" % "test",
