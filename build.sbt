@@ -49,7 +49,7 @@ riffRaffPackageType := assembly.value
 riffRaffUploadArtifactBucket := Option("riffraff-artifact")
 riffRaffUploadManifestBucket := Option("riffraff-builds")
 riffRaffManifestProjectName := "MemSub::Subscriptions::Salesforce Message Handler"
-riffRaffArtifactResources += (file("cfn.yaml"), s"${name.value}-cfn/cfn.yaml")
+riffRaffArtifactResources += (file("cfn.yaml"), "cfn/cfn.yaml")
 
 CxfKeys.wsdls += Wsdl("sfOutboundMessages", (baseDirectory.value / "wsdl/salesforce-outbound-message.wsdl").getPath)
 
