@@ -78,7 +78,7 @@ Resources:
       Handler: com.gu.salesforce.messageHandler.Lambda::handleRequest
       MemorySize: 1536
       Role: !GetAtt ExecutionRole.Arn
-      Runtime: java8
+      Runtime: java8.al2
       Timeout: 300
 
   MessageHandlerApiPermission:
