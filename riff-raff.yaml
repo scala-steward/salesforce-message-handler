@@ -17,3 +17,4 @@ deployments:
       functionNames: [salesforce-message-handler-]
       fileName: salesforce-message-handler.jar
       prefixStack: false
+    dependencies: [cfn]
