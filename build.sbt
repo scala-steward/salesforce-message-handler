@@ -51,11 +51,16 @@ riffRaffUploadManifestBucket := Option("riffraff-builds")
 riffRaffManifestProjectName := "MemSub::Subscriptions::Salesforce Message Handler"
 riffRaffArtifactResources += (file("cfn.yaml"), "cfn/cfn.yaml")
 
-CxfKeys.wsdls += Wsdl("sfOutboundMessages", (baseDirectory.value / "wsdl/salesforce-outbound-message.wsdl").getPath)
+cxfTarget := (sourceManaged.value / "cxf" / "sfOutboundMessages" / "main")
+cxfWsdls +=
+  Wsdl(
+    id = "",
+    wsdlFile = baseDirectory.value / "wsdl/salesforce-outbound-message.wsdl"
+  )
 
 //Having a merge strategy here is necessary as there is an conflict in the file contents for the jackson libs, there are two same versions with different contents.
 //As a result we're picking the first file found on the classpath - this may not be required if the contents match in a future release
-assemblyMergeStrategy in assembly := {
+assembly / assemblyMergeStrategy := {
   case PathList("META-INF", xs@_*) => MergeStrategy.discard
   case x => MergeStrategy.first
 }
