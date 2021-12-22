@@ -31,7 +31,7 @@ libraryDependencies ++= Seq(
   "org.specs2" %% "specs2-matcher-extra" % "3.9.4" % "test",
   "org.specs2" %% "specs2-mock" % "3.9.4" % "test",
   "org.hamcrest" % "hamcrest-all" % "1.1" % "test",
-  "org.mockito" % "mockito-all" % "1.9.5" % "test",
+  "org.mockito" % "mockito-all" % "1.10.19" % "test",
   
   // All the below are required to force aws libraries to use the latest version of jackson
   "com.fasterxml.jackson.core" % "jackson-databind" % jacksonVersion,
