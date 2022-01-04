@@ -30,7 +30,7 @@ libraryDependencies ++= Seq(
   "org.specs2" %% "specs2-core" % "3.9.5" % "test",
   "org.specs2" %% "specs2-matcher-extra" % "3.9.5" % "test",
   "org.specs2" %% "specs2-mock" % "3.9.5" % "test",
-  "org.hamcrest" % "hamcrest-all" % "1.1" % "test",
+  "org.hamcrest" % "hamcrest-all" % "1.3" % "test",
   "org.mockito" % "mockito-all" % "1.9.5" % "test",
   
   // All the below are required to force aws libraries to use the latest version of jackson
