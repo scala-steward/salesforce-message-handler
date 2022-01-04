@@ -20,7 +20,7 @@ val jacksonVersion = "2.10.5.1"
 
 libraryDependencies ++= Seq(
   "com.amazonaws" % "aws-lambda-java-log4j" % "1.0.0",
-  "com.amazonaws" % "aws-lambda-java-core" % "1.2.0",
+  "com.amazonaws" % "aws-lambda-java-core" % "1.2.1",
   "com.amazonaws" % "aws-java-sdk-sqs" % "1.11.566",
   "com.amazonaws" % "aws-java-sdk-s3" % "1.11.566",
   "com.typesafe" % "config" % "1.3.1",
