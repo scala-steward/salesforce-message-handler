@@ -7,7 +7,7 @@ description:= "handle outbound messages from salesforce to update zuora and iden
 
 version := "1.0"
 
-scalaVersion := "2.12.8"
+scalaVersion := "2.12.15"
 
 scalacOptions ++= Seq(
   "-deprecation",
@@ -19,12 +19,12 @@ scalacOptions ++= Seq(
 val jacksonVersion = "2.10.5.1"
 
 libraryDependencies ++= Seq(
-  "com.amazonaws" % "aws-lambda-java-log4j" % "1.0.1",
-  "com.amazonaws" % "aws-lambda-java-core" % "1.2.0",
+  "com.amazonaws" % "aws-lambda-java-log4j" % "1.0.0",
+  "com.amazonaws" % "aws-lambda-java-core" % "1.2.1",
   "com.amazonaws" % "aws-java-sdk-sqs" % "1.11.566",
   "com.amazonaws" % "aws-java-sdk-s3" % "1.11.566",
   "com.typesafe" % "config" % "1.3.1",
-  "org.slf4j" % "slf4j-simple" % "1.7.25",
+  "org.slf4j" % "slf4j-simple" % "1.7.32",
   "com.typesafe.play" %% "play-json" % "2.8.1",
   "org.scala-lang.modules" %% "scala-xml" % "1.0.6",
   "org.specs2" %% "specs2-core" % "3.9.4" % "test",
