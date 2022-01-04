@@ -27,9 +27,9 @@ libraryDependencies ++= Seq(
   "org.slf4j" % "slf4j-simple" % "1.7.32",
   "com.typesafe.play" %% "play-json" % "2.8.1",
   "org.scala-lang.modules" %% "scala-xml" % "1.0.6",
-  "org.specs2" %% "specs2-core" % "3.9.5" % "test",
-  "org.specs2" %% "specs2-matcher-extra" % "3.9.5" % "test",
-  "org.specs2" %% "specs2-mock" % "3.9.5" % "test",
+  "org.specs2" %% "specs2-core" % "3.10.0" % "test",
+  "org.specs2" %% "specs2-matcher-extra" % "3.10.0" % "test",
+  "org.specs2" %% "specs2-mock" % "3.10.0" % "test",
   "org.hamcrest" % "hamcrest-all" % "1.1" % "test",
   "org.mockito" % "mockito-all" % "1.9.5" % "test",
   
