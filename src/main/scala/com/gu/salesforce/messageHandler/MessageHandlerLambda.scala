@@ -1,18 +1,18 @@
 package com.gu.salesforce.messageHandler
 
-import java.io.{ ByteArrayInputStream, InputStream, OutputStream }
-import javax.xml.bind.JAXBContext
-import javax.xml.soap.MessageFactory
-
 import com.amazonaws.services.lambda.runtime.Context
 import com.amazonaws.services.sqs.model.SendMessageResult
 import com.gu.salesforce.messageHandler.APIGatewayResponse._
 import com.sforce.soap._2005._09.outbound._
 import play.api.libs.json.{ JsValue, Json }
+
+import java.io.{ ByteArrayInputStream, InputStream, OutputStream }
+import javax.xml.bind.JAXBContext
+import javax.xml.soap.MessageFactory
+import scala.collection.JavaConverters._
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.collection.JavaConversions._
 import scala.concurrent.duration.Duration
-import scala.concurrent.{ Await, ExecutionContext, Future }
+import scala.concurrent.{ Await, Future }
 import scala.util.{ Failure, Try }
 
 trait RealDependencies {
@@ -92,7 +92,7 @@ trait MessageHandler extends Logging {
       val body = (inputEvent \ "body").as[String]
       val parsedMessage = parseMessage(body)
       if (parsedMessage.getOrganizationId.startsWith(Config.salesforceOrganizationId)) {
-        processNotifications(parsedMessage.getNotification.toList, outputStream)
+        processNotifications(asScalaBuffer(parsedMessage.getNotification).toList, outputStream)
       } else {
         logger.info("Unexpected salesforce organization id in xml message")
         outputForAPIGateway(outputStream, unauthorized)

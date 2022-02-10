@@ -16,22 +16,22 @@ scalacOptions ++= Seq(
   "-Ywarn-dead-code"
 )
 
-val jacksonVersion = "2.10.5.1"
+val jacksonVersion = "2.13.1"
 
 libraryDependencies ++= Seq(
-  "com.amazonaws" % "aws-lambda-java-log4j" % "1.0.0",
+  "com.amazonaws" % "aws-lambda-java-log4j" % "1.0.1",
   "com.amazonaws" % "aws-lambda-java-core" % "1.2.1",
-  "com.amazonaws" % "aws-java-sdk-sqs" % "1.11.566",
-  "com.amazonaws" % "aws-java-sdk-s3" % "1.11.566",
-  "com.typesafe" % "config" % "1.3.1",
-  "org.slf4j" % "slf4j-simple" % "1.7.32",
-  "com.typesafe.play" %% "play-json" % "2.8.1",
-  "org.scala-lang.modules" %% "scala-xml" % "1.0.6",
-  "org.specs2" %% "specs2-core" % "3.9.5" % "test",
-  "org.specs2" %% "specs2-matcher-extra" % "3.9.5" % "test",
-  "org.specs2" %% "specs2-mock" % "3.9.5" % "test",
-  "org.hamcrest" % "hamcrest-all" % "1.1" % "test",
-  "org.mockito" % "mockito-all" % "1.9.5" % "test",
+  "com.amazonaws" % "aws-java-sdk-sqs" % "1.12.150",
+  "com.amazonaws" % "aws-java-sdk-s3" % "1.12.150",
+  "com.typesafe" % "config" % "1.4.1",
+  "org.slf4j" % "slf4j-simple" % "1.7.35",
+  "com.typesafe.play" %% "play-json" % "2.9.2",
+  "org.scala-lang.modules" %% "scala-xml" % "2.0.1",
+  "org.specs2" %% "specs2-core" % "4.13.2" % "test",
+  "org.specs2" %% "specs2-matcher-extra" % "4.13.2" % "test",
+  "org.specs2" %% "specs2-mock" % "4.13.2" % "test",
+  "org.hamcrest" % "hamcrest-all" % "1.3" % "test",
+  "org.mockito" % "mockito-all" % "1.10.19" % "test",
   
   // All the below are required to force aws libraries to use the latest version of jackson
   "com.fasterxml.jackson.core" % "jackson-databind" % jacksonVersion,
@@ -61,6 +61,6 @@ cxfWsdls +=
 //Having a merge strategy here is necessary as there is an conflict in the file contents for the jackson libs, there are two same versions with different contents.
 //As a result we're picking the first file found on the classpath - this may not be required if the contents match in a future release
 assembly / assemblyMergeStrategy := {
-  case PathList("META-INF", xs@_*) => MergeStrategy.discard
-  case x => MergeStrategy.first
+  case PathList("META-INF", _@_*) => MergeStrategy.discard
+  case _ => MergeStrategy.first
 }
