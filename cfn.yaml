@@ -124,11 +124,11 @@ Resources:
     Properties:
         Description: Stage for salesforce message handler API
         RestApiId: !Ref MessageHandlerApi
-        DeploymentId: !Ref MessageHandlerAPIDeployment
+        DeploymentId: !Ref MessageHandlerAPIDeployment1
         StageName: !Sub ${Stage}
     DependsOn: ContactMethod
 
-  MessageHandlerAPIDeployment:
+  MessageHandlerAPIDeployment1:
     Type: AWS::ApiGateway::Deployment
     Properties:
         Description: Deploys the message handler API into an environment/stage

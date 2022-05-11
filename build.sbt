@@ -16,7 +16,6 @@ scalacOptions ++= Seq(
   "-Ywarn-dead-code"
 )
 
-val jacksonVersion = "2.13.1"
 
 libraryDependencies ++= Seq(
   "com.amazonaws" % "aws-lambda-java-log4j" % "1.0.1",
@@ -31,16 +30,27 @@ libraryDependencies ++= Seq(
   "org.specs2" %% "specs2-matcher-extra" % "4.13.2" % "test",
   "org.specs2" %% "specs2-mock" % "4.13.2" % "test",
   "org.hamcrest" % "hamcrest-all" % "1.3" % "test",
-  "org.mockito" % "mockito-all" % "1.10.19" % "test",
-  
-  // All the below are required to force aws libraries to use the latest version of jackson
-  "com.fasterxml.jackson.core" % "jackson-databind" % jacksonVersion,
-  "com.fasterxml.jackson.core" % "jackson-core" % jacksonVersion,
-  "com.fasterxml.jackson.core" % "jackson-annotations" % jacksonVersion,
-  "com.fasterxml.jackson.dataformat" % "jackson-dataformat-cbor" % jacksonVersion,
-  "com.fasterxml.jackson.datatype" % "jackson-datatype-jdk8" % jacksonVersion,
-  "com.fasterxml.jackson.datatype" % "jackson-datatype-jsr310" % jacksonVersion
+  "org.mockito" % "mockito-all" % "1.10.19" % "test"
 )
+
+/* required to bump jackson versions due to CVE-2020-36518 */ 
+val jacksonVersion         = "2.13.2"
+val jacksonDatabindVersion = "2.13.2.2"
+
+val jacksonDependencies = Seq(
+  "com.fasterxml.jackson.core"     % "jackson-core" %  jacksonVersion,
+  "com.fasterxml.jackson.core"     % "jackson-annotations" %  jacksonVersion,
+  "com.fasterxml.jackson.datatype" % "jackson-datatype-jdk8" %  jacksonVersion,
+  "com.fasterxml.jackson.datatype" % "jackson-datatype-jsr310" %  jacksonVersion,
+  "com.fasterxml.jackson.core" % "jackson-databind" % jacksonDatabindVersion,
+  "com.fasterxml.jackson.dataformat" % "jackson-dataformat-cbor" % jacksonVersion,
+  "com.fasterxml.jackson.module"     % "jackson-module-parameter-names" % jacksonVersion,
+  "com.fasterxml.jackson.module"     %% "jackson-module-scala" % jacksonVersion,
+)
+
+dependencyOverrides ++= jacksonDependencies
+
+/* EOF jackson version overrides */
 
 enablePlugins(RiffRaffArtifact)
 
